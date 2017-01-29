@@ -1,0 +1,39 @@
+{
+  "name": "activedirectory-webapi",
+  "version": "1.0.0",
+  "description": "https://docs.microsoft.com/en-gb/azure/active-directory/develop/active-directory-devquickstarts-webapi-nodejs",
+  "main": "server.js",
+  "scripts": {
+    "preinstall": "node src/tools/nodeVersionCheck.js",
+    "start": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chookie/activedirectory-webapi.git"
+  },
+  "author": "Alison Johnston",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chookie/activedirectory-webapi/issues"
+  },
+  "homepage": "https://github.com/chookie/activedirectory-webapi#readme",
+  "dependencies": {
+    "body-parser": "^1.16.0",
+    "bunyan": "^1.8.5",
+    "config": "^1.24.0",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.1",
+    "express-session": "^1.15.0",
+    "http": "0.0.0",
+    "method-override": "^2.3.7",
+    "morgan": "^1.7.0",
+    "passport": "^0.3.2",
+    "passport-azure-ad": "^3.0.4",
+    "restify": "^4.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "npm-run-all": "^4.0.1"
+  }
+}
