@@ -2,10 +2,8 @@
 
 /* Create a local config file to override some values
     module.exports = {
-        server: {
-            port: process.env.port || 60000,
-            sessionSecret: '1234567890'
-        },
+        port: process.env.port || 60000,
+        sessionSecret: '1234567890'
         credentials: {
             clientID: '1234567890',
             clientSecret: '1234567890'
@@ -20,10 +18,8 @@
 
 module.exports = {
     appName: 'azure-ad-webclient',
-    server: {
-        port: process.env.port || 8080,
-        sessionSecret: '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***'
-    },
+    port: process.env.port || 8080,
+    sessionSecret: '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
     // https://github.com/AzureAD/passport-azure-ad
     // validateIssuer should be true for prod
     credentials: {
@@ -36,6 +32,6 @@ module.exports = {
           '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
           '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***'
         ],
-        loggingLevel: 'warn'
+        loggingLevel: 'info'
     }
 }

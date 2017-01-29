@@ -24,8 +24,8 @@ var log = bunyan.createLogger({
 });
 
 var server = restify.createServer({
-  certificate: fs.readFileSync('./src/tools/rsa-key.pem'),
-  key: fs.readFileSync('./src/tools/rsa-cert.pem'),
+  key: fs.readFileSync('./src/tools/rsa-key.pem'),
+  certificate: fs.readFileSync('./src/tools/rsa-cert.pem'),
   name: config.appName,
   log: log
 });
@@ -44,13 +44,13 @@ server.use(restify.bodyParser({
 })); // Allows for JSON mapping to restify
 server.use(restify.CORS());
 
-server.listen(8080);
+server.listen(config.port, 'localhost', onListening);
 server.on('error', onError);
 server.on('listening', onListening);
 
 
 server.get('/hello/:name', (req, res, next) => {
-  res.send('hello ' + req.params.name);
+  res.send({message: `hello ${req.params.name}`});
   next();
 });
 
@@ -104,12 +104,7 @@ function onError(error) {
  * Event listener for HTTP server "listening" event.
  */
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  log.info('Listening on ' + bind);
-  log.info('Started on http://localhost:' + addr.port);
-  //   console.info('Started on http://localhost:' + addr.port);
-  console.log('%s listening at %s', server.name, server.url);
+  log.info('%s listening at %s', server.name, server.url);
+  console.log('Server started on %s', server.url);
+  console.log(`Test using:\n  curl -k ${server.url}/hello/test`);
 }
