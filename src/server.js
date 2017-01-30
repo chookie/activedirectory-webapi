@@ -83,7 +83,7 @@ server.use(passport.session()); // Provides session support
 
 passport.use(new OIDCBearerStrategy(config.credentials,
     (token, done) => {
-        log.info('verifying the user');
+        log.debug('Verifying the user');
         findById(token.sub, function(err, user) {
             if (err) {
                 return done(err);
@@ -92,9 +92,12 @@ passport.use(new OIDCBearerStrategy(config.credentials,
                 // "Auto-registration"
                 log.info('User was added automatically as they were new. Their sub is: ', token.sub);
                 // const id = uuid.v4();
-                users[id] = token.sub;
+                const id = token.sub;
+                users[id] = token;
                 owner = token.sub;
                 return done(null, token);
+            } else {
+              log.debug(`Existing user ${user.sub}`);
             }
             owner = token.sub;
             return done(null, user, token);
@@ -120,14 +123,11 @@ server.get('/helloSecure/:name', passport.authenticate('oauth-bearer', {
 });
 
 function findById(id, fn) {
-    for (var i = 0, len = users.length; i < len; i++) {
-        var user = users[i];
-        if (user.sub === id) {
-            log.info('Found user: ', user);
-            return fn(null, user);
-        }
-    }
-    return fn(null, null);
+  if (users.hasOwnProperty(id)) {
+    const user = users[id];
+    return fn(null, user);
+  }
+  return fn(null, null);
 };
 
 /**
