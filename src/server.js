@@ -6,24 +6,32 @@ const restify = require('restify');
 const fs = require('fs');
 const uuid = require('uuid');
 const bunyan = require('bunyan');
+const PrettyStream = require('bunyan-prettystream');
 const session = require('express-session');
 var OIDCBearerStrategy = require('passport-azure-ad').BearerStrategy;
 
+var prettyStdOut = process.stdout;
+var prettyErrOut = process.stderr;
+var streamType = 'stream';
+if (config.env !== 'production') {
+  prettyStdOut = new PrettyStream();
+  prettyStdOut.pipe(process.stdout);
+  prettyErrOut = new PrettyStream();
+  prettyErrOut.pipe(process.stderr);
+  streamType = 'raw';
+}
 
-console.log(config.appName);
 var log = bunyan.createLogger({
-  name: config.appName,
-  streams: [
-    {
-      stream: process.stderr,
-      level: "error",
-      name: "error"
-    },
-    {
-      stream: process.stdout,
-      level: config.credentials.loggingLevel,
-      name: "console"
-    },]
+        name: 'foo',
+        streams: [{
+            level: 'debug',
+            type: streamType,
+            stream: prettyStdOut
+        },{
+            level: 'error',
+            type: streamType,
+            stream: prettyErrOut
+        }]
 });
 
 var server = restify.createServer({
@@ -46,7 +54,7 @@ server.use(restify.bodyParser({
   mapParams: true
 })); // Allows for JSON mapping to restify
 server.use(restify.CORS());
-server.use(restify.authorizationParser()); // Looks for authorization headers
+// server.use(restify.authorizationParser()); // Looks for authorization headers
 
 server.use(session({
     name: config.appName,
@@ -60,13 +68,22 @@ server.use(session({
 var users = {};
 var owner = null;
 
+passport.serializeUser((user, done) => {
+    const id = user.sub;
+    users[id] = user;
+    done(null, id);
+});
+passport.deserializeUser((id, done) => {
+    const user = users[id];
+    done(null, user)
+});
+
 server.use(passport.initialize()); // Starts passport
 server.use(passport.session()); // Provides session support
 
 passport.use(new OIDCBearerStrategy(config.credentials,
     (token, done) => {
         log.info('verifying the user');
-        log.info(token, 'was the token retreived');
         findById(token.sub, function(err, user) {
             if (err) {
                 return done(err);
@@ -74,8 +91,8 @@ passport.use(new OIDCBearerStrategy(config.credentials,
             if (!user) {
                 // "Auto-registration"
                 log.info('User was added automatically as they were new. Their sub is: ', token.sub);
-                const id = uuid.v4();
-                users[id] = token;
+                // const id = uuid.v4();
+                users[id] = token.sub;
                 owner = token.sub;
                 return done(null, token);
             }
@@ -98,7 +115,7 @@ server.get('/hello/:name', (req, res, next) => {
 server.get('/helloSecure/:name', passport.authenticate('oauth-bearer', {
     session: false
 }), (req, res, next) => {
-  res.send({message: `helloSecure ${req.params.name}`});
+  res.send({message: `helloSecure ${req.params.name} from ${req.user}`});
   next();
 });
 

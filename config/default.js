@@ -18,6 +18,7 @@
 
 module.exports = {
     appName: 'azure-ad-webclient',
+    env: process.env.NODE_ENV || 'development',
     port: process.env.port || 8080,
     sessionSecret: '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
     // https://github.com/AzureAD/passport-azure-ad
