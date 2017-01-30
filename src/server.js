@@ -105,7 +105,7 @@ passport.use(new OIDCBearerStrategy(config.credentials,
     }
 ));
 
-server.listen(config.port, 'localhost', onListening);
+server.listen(config.port, config.host, onListening);
 server.on('error', onError);
 server.on('listening', onListening);
 
