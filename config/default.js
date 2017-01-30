@@ -24,7 +24,6 @@ module.exports = {
     // validateIssuer should be true for prod
     credentials: {
         clientID: '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
-        clientSecret: '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
         identityMetadata: 'https://login.microsoftonline.com/common/.well-known/openid-configuration',
         passReqToCallback: false,
         validateIssuer: true,
@@ -32,6 +31,6 @@ module.exports = {
           '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
           '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***'
         ],
-        loggingLevel: 'info'
+        loggingLevel: 'debug'
     }
 }
