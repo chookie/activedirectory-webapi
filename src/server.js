@@ -119,8 +119,8 @@ server.get('/hello/:name', (req, res, next) => {
 server.get('/helloSecure/:name', passport.authenticate('oauth-bearer', {
     session: false
 }), (req, res, next) => {
-  log.debug('helloSecure called', req.headers);
-  res.send({message: `helloSecure ${req.params.name} from ${req.user}`});
+  log.debug('helloSecure called', req.user);
+  res.send({message: `helloSecure ${req.params.name} from ${req.user.name}`});
   next();
 });
 
