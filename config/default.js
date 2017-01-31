@@ -29,7 +29,7 @@ module.exports = {
         clientID: '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
         identityMetadata: 'https://login.microsoftonline.com/common/.well-known/openid-configuration',
         passReqToCallback: false,
-        validateIssuer: true,
+        validateIssuer: false,
         issuer: [
           '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
           '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***'

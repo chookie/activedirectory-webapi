@@ -111,6 +111,7 @@ server.on('listening', onListening);
 
 
 server.get('/hello/:name', (req, res, next) => {
+  log.debug('hello called', req.headers);
   res.send({message: `hello ${req.params.name}`});
   next();
 });
@@ -118,6 +119,7 @@ server.get('/hello/:name', (req, res, next) => {
 server.get('/helloSecure/:name', passport.authenticate('oauth-bearer', {
     session: false
 }), (req, res, next) => {
+  log.debug('helloSecure called', req.headers);
   res.send({message: `helloSecure ${req.params.name} from ${req.user}`});
   next();
 });
