@@ -6,7 +6,7 @@
         sessionSecret: '1234567890'
         credentials: {
             clientID: '1234567890',
-            clientSecret: '1234567890'
+            audience: '1234567890'
         },
         issuer: [
           '1234567890',
