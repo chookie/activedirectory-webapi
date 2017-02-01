@@ -27,7 +27,7 @@ module.exports = {
     // validateIssuer should be true for prod
     credentials: {
         clientID: '*** Do not past here.  Put in local file and DO NOT COMMIT.  ***',
-        identityMetadata: 'https://login.microsoftonline.com/common/.well-known/openid-configuration',
+        identityMetadata: 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration',
         passReqToCallback: false,
         validateIssuer: true,
         issuer: [
