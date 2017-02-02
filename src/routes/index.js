@@ -23,6 +23,13 @@ module.exports = class Routes {
         graphiql: true
     }));
 
+    this.app.use('/msgraph',
+      this.passport.authenticate('oauth-bearer',{session: false}),
+      GraphQLHTTP({
+        schema: mockSchema(),
+        graphiql: true
+    }));
+
     this.app.get('/hello', (req, res, next) => {
       this.log.info('helloSecure called by unknown');
       res.send({
