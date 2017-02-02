@@ -2,13 +2,29 @@
 
 const passport = require('passport');
 const config = require('config');
-const restify = require('restify');
+// const restify = require('restify');
 const fs = require('fs');
 const uuid = require('uuid');
 const bunyan = require('bunyan');
 const PrettyStream = require('bunyan-prettystream');
 const session = require('express-session');
-var OIDCBearerStrategy = require('passport-azure-ad').BearerStrategy;
+const OIDCBearerStrategy = require('passport-azure-ad').BearerStrategy;
+const routes = require('./routes');
+const express = require('express');
+const https = require('https');
+const morgan = require('morgan');
+const methodOverride = require('method-override');
+const bodyParser = require('body-parser');
+
+
+const app = express();
+
+if (config.env !== 'production') {
+  app.use(morgan('dev'));
+} else {
+  // Combined uses Apache style logs
+  app.use(morgan('combined'));
+}
 
 var prettyStdOut = process.stdout;
 var prettyErrOut = process.stderr;
@@ -21,7 +37,7 @@ if (config.env !== 'production') {
   streamType = 'raw';
 }
 
-var log = bunyan.createLogger({
+const log = bunyan.createLogger({
         name: config.appName,
         streams: [{
             level: 'debug',
@@ -34,36 +50,12 @@ var log = bunyan.createLogger({
         }]
 });
 
-var server = restify.createServer({
-  key: fs.readFileSync('./src/tools/rsa-key.pem'),
-  certificate: fs.readFileSync('./src/tools/rsa-cert.pem'),
-  name: config.appName,
-  log: log
-});
+app.set('port', config.port);
+app.use(methodOverride()); // lets you use PUT and DELETE http met
+app.use(bodyParser.text());
+app.use(bodyParser.json({ type: 'application/json' }));
 
-// Ensure we don't drop data on uploads
-server.pre(restify.pre.pause());
-server.pre(restify.pre.sanitizePath());
-// Handles annoying user agents (curl)
-server.pre(restify.pre.userAgentConnection());
-server.use(restify.acceptParser(server.acceptable));
-server.use(restify.dateParser());
-server.use(restify.queryParser());
-server.use(restify.gzipResponse());
-server.use(restify.bodyParser({
-  mapParams: true
-})); // Allows for JSON mapping to restify
-server.use(restify.CORS());
-// server.use(restify.authorizationParser()); // Looks for authorization headers
-
-server.use(session({
-    name: config.appName,
-    secret: config.sessionSecret,
-    resave: false,
-    saveUninitialized: false,
-  	cookie: {secure: true}
-}));
-
+const users = {};
 passport.serializeUser((user, done) => {
     const id = user.sub;
     users[id] = user;
@@ -73,10 +65,6 @@ passport.deserializeUser((id, done) => {
     const user = users[id];
     done(null, user)
 });
-
-server.use(passport.initialize());
-server.use(passport.session());
-
 passport.use(new OIDCBearerStrategy(config.credentials,
     (token, done) => {
       log.debug('Verifying the user');
@@ -84,38 +72,19 @@ passport.use(new OIDCBearerStrategy(config.credentials,
     }
 ));
 
-server.listen(config.port, config.host, onListening);
+app.use(passport.initialize());
+app.use(passport.session());
+
+const httpOptions = {
+  key: fs.readFileSync('./src/tools/rsa-key.pem'),
+  cert: fs.readFileSync('./src/tools/rsa-cert.pem')
+};
+var server = https.createServer(httpOptions, app);
+server.listen(config.port, config.host);
 server.on('error', onError);
 server.on('listening', onListening);
 
-
-server.get('/hello', (req, res, next) => {
-  log.info('helloSecure called by ', req.user.name);
-  res.send({
-    message: `hello ${req.user.name}, you\'ve connected with to your friendly API`,
-    authentication: false
-  });
-  next();
-});
-
-server.get('/helloSecure', passport.authenticate('oauth-bearer', {
-    session: false
-}), (req, res, next) => {
-  log.info('helloSecure called by ', req.user.name);
-  res.send({
-    message: `hello ${req.user.name}, you\'ve authenticated with to your friendly API`,
-    authentication: true
-  });
-  next();
-});
-
-function findById(id, fn) {
-  if (users.hasOwnProperty(id)) {
-    const user = users[id];
-    return fn(null, user);
-  }
-  return fn(null, null);
-};
+new routes(app, passport, log)();
 
 /**
  * Normalize a port into a number, string, or false.
@@ -167,7 +136,7 @@ function onError(error) {
  * Event listener for HTTP server "listening" event.
  */
 function onListening() {
-  log.info('%s listening at %s', server.name, server.url);
-  console.log('Server started on %s', server.url);
-  console.log(`Test using:\n  curl -kisS ${server.url}/hello`);
+  log.info('%s listening at %s', config.appName, server.address().address);
+  console.log('Server started on %s', server.address().address);
+  console.log(`Test using:\n  curl -kisS ${server.address().address}/hello`);
 }
